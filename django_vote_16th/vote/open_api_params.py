@@ -1,6 +1,14 @@
 from drf_yasg import openapi
 
-get_params = [
+
+demo_vote = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'team': openapi.Schema(type=openapi.TYPE_STRING, description='vote for'),
+    }
+)
+
+part_get = [
     openapi.Parameter(
         "part",
         openapi.IN_QUERY,
@@ -9,8 +17,7 @@ get_params = [
     )
 ]
 
-
-post_params = openapi.Schema(
+part_vote = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
         'name': openapi.Schema(type=openapi.TYPE_STRING, description='vote for'),
