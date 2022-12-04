@@ -17,6 +17,7 @@ class Demo_Vote(BaseModel):
 
 
 class PartLeader_Vote(BaseModel):
+    part = models.CharField(max_length=30)
     votee = models.CharField(max_length=30)
 
     def __str__(self):
