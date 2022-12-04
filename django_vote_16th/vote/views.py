@@ -15,7 +15,7 @@ class DemoVoteView(APIView):
     permissions_classes = [permissions.AllowAny]
 
     @swagger_auto_schema()
-    def get(self, request, part):
+    def get(self, request):
         lists = User.objects.all()
         serializer = TeamSerializer(lists, many=True)
 
@@ -24,8 +24,8 @@ class DemoVoteView(APIView):
     @swagger_auto_schema(request_body=demo_vote)
     def post(self, request):
 
-        # if(User.team!=request.body['team'])
-        Demo_Vote.object.create(team=request.body['team'])
+        # if(user_team!=request.data['team'])
+        Demo_Vote.objects.create(team=request.data['team'])
 
         return Response("데모 데이 투표 성공")
 
@@ -41,8 +41,9 @@ class PartVoteView(APIView):
         return Response(serializer.data)
 
     @swagger_auto_schema(request_body=part_vote)
-    def post(self, request):
-        PartLeader_Vote.object.create(votee=request.body['votee'])
+    def post(self, request, part):
+        # if user_part==part
+        PartLeader_Vote.objects.create(part=part, votee=request.data['votee'])
 
         return Response("파트 리더 투표 성공")
 
