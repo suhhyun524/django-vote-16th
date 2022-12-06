@@ -21,17 +21,3 @@ class User(BaseModel):
 
     def __str__(self):
         return self.name
-
-
-class Demo_Vote(BaseModel):
-    team = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.team
-
-
-class PartLeader_Vote(BaseModel):
-    votee = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.votee
