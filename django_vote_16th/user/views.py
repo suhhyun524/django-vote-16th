@@ -3,7 +3,9 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer, \
+    TokenVerifySerializer
+from rest_framework_simplejwt.exceptions import TokenError
 
 from .serializers import *
 from .models import *
@@ -137,3 +139,98 @@ class LoginAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 토큰 재발급
+class TokenRefreshAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="access token 재발급",
+        operation_summary="access token 재발급",
+        request_body=TokenRefreshSerializer,
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "message": openapi.Schema(description="access token 재발급 성공", type=openapi.TYPE_STRING),
+                    "token": openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            "access": openapi.Schema(description='access token', type=openapi.TYPE_STRING),
+                        }
+                    ),
+                }
+            ),
+            400: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "message": openapi.Schema(description="refresh token이 유효하지 않거나 만료되었습니다.", type=openapi.TYPE_STRING),
+                }
+            )
+        }
+    )
+
+    def post(self, request):
+        try:
+            # access 토큰 만료시
+            serializer = TokenRefreshSerializer(data=request.data)
+
+            if serializer.is_valid(raise_exception=True):
+                access_token = serializer.validated_data['access']
+                refresh_token = request.COOKIES.get('refresh_token', None)
+                res = Response(
+                    {
+                        "message": "access token 재발급 성공",
+                        "token": {
+                            "access": access_token,
+                        },
+                    },
+                    status=status.HTTP_200_OK,
+                )
+                res.set_cookie('access_token', access_token, httponly=True)
+                res.set_cookie('refresh_token', refresh_token, httponly=True)
+                print(access_token)
+                return res
+        except(TokenError):  # refresh 토큰까지 만료 시
+            return Response({"message": "refresh token이 유효하지 않거나 만료되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 토큰 유효성 검사
+class TokenVerifyAPIView(APIView):
+
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="토큰 유효성 검사",
+        operation_summary="토큰 유효성 검사",
+        request_body=TokenVerifySerializer,
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "message": openapi.Schema(description='유효한 토큰입니다.', type=openapi.TYPE_STRING)
+                },
+            ),
+            400: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "message": openapi.Schema(description="유효하지 않거나 만료된 토큰입니다.", type=openapi.TYPE_STRING)
+                }
+            )
+        }
+    )
+
+    def post(self, request):
+        try:
+            serializer = TokenVerifySerializer(data=request.data)
+
+            if serializer.is_valid(raise_exception=False):
+                res = Response(
+                    {
+                        "message": "유효한 토큰입니다.",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+                return res
+
+        except(TokenError):  # 토큰 만료 시
+            return Response({"message": "refresh token이 유효하지 않거나 만료되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
