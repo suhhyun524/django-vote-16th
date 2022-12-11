@@ -1,9 +1,11 @@
+import attrs as attrs
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 
 from .serializers import *
 from .models import *
@@ -137,3 +139,67 @@ class LoginAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 토큰 재발급
+class TokenRefreshAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="access token 재발급",
+        operation_summary="access token 재발급",
+        request_body=TokenRefreshSerializer,
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "message": openapi.Schema(description='access token 재발급 여부', type=openapi.TYPE_STRING),
+                    "token": openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            "access": openapi.Schema(description='access token', type=openapi.TYPE_STRING),
+                        }
+                    ),
+                }
+            )
+        }
+    )
+
+    def post(self, request):
+        try:
+            access_token = request.COOKIES['access_token']
+            res = Response(
+                {
+                    "message": "access token이 아직 유효합니다.",
+                    "token": {
+                        "access": access_token,
+                    },
+                },
+                status=status.HTTP_200_OK
+            )
+            res.set_cookie('access', access_token)
+            res.set_cookie('refresh', request.COOKIES['refresh_token'])
+            return res
+
+        # 토큰 만료시 토큰 갱신
+        except:
+            try:
+                # access 토큰 만료시
+                serializer = TokenRefreshSerializer(data={'refresh': request.data.get('refresh', None)})
+
+                if serializer.is_valid(raise_exception=True):
+                    access_token = serializer.validated_data['access']
+                    refresh_token = request.COOKIES.get('refresh_token', None)
+                    res = Response(
+                        {
+                            "message": "access token 재발급 성공",
+                            "token": {
+                                "access": access_token,
+                            },
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                    res.set_cookie('access_token', access_token, httponly=True)
+                    res.set_cookie('refresh_token', refresh_token, httponly=True)
+                    print(access_token)
+                    return res
+            except(TokenError):  # refresh 토큰까지 만료 시
+                return Response({"message": "refresh token이 만료되었습니다."}, status=status.HTTP_200_OK)
