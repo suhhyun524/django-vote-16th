@@ -40,6 +40,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('vote/', include('vote.urls')),
+    path('user/', include('user.urls')),
 ]
 
 if settings.DEBUG:
