@@ -83,6 +83,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    refresh_token = models.CharField(max_length=300, null=True, blank=True)
+
     objects = UserManager()
 
     USERNAME_FIELD = 'user_id'
