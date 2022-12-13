@@ -61,6 +61,34 @@ class LoginSerializer(serializers.ModelSerializer):
             if not user.check_password(password):
                 raise serializers.ValidationError("패스워드가 잘못되었습니다.")
 
+
+        else:
+            raise serializers.ValidationError("해당 유저는 존재하지 않습니다.")
+
+        return user
+
+class LogoutSerializer(serializers.ModelSerializer):
+
+    user_id = serializers.CharField(
+        required=True,
+        write_only=True,
+    )
+
+    class Meta:
+        model = User
+        fields = ['user_id']
+
+    def validate(self, data):
+        user_id = data.get('user_id', None)
+
+        if User.objects.filter(user_id=user_id).exists():
+            user = User.objects.get(user_id=user_id)
+            refresh_token = user.refresh_token
+
+            # refresh token이 null값
+            if not refresh_token:
+                raise serializers.ValidationError("이미 로그아웃 되었거나 현재 로그인 되어 있지 않습니다.")
+
         else:
             raise serializers.ValidationError("해당 유저는 존재하지 않습니다.")
 

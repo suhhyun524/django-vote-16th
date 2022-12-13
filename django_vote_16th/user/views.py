@@ -117,6 +117,8 @@ class LoginAPIView(APIView):
             token = TokenObtainPairSerializer.get_token(user)
             refresh_token = str(token)
             access_token = str(token.access_token)
+            user.refresh_token = refresh_token
+            user.save()
             res = Response(
                 {
                     "user": {
@@ -234,3 +236,53 @@ class TokenVerifyAPIView(APIView):
 
         except(TokenError):  # 토큰 만료 시
             return Response({"message": "refresh token이 유효하지 않거나 만료되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 로그아웃
+class LogoutAPIView(APIView):
+
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="로그아웃",
+        operation_summary="로그아웃",
+        request_body=LogoutSerializer,
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "user": openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            "user_id": openapi.Schema(description='회원 id', type=openapi.TYPE_STRING),
+                            "name": openapi.Schema(description='회원 이름', type=openapi.TYPE_STRING),
+                            "part": openapi.Schema(description='회원이 속한 파트', type=openapi.TYPE_STRING),
+                            "team": openapi.Schema(description='회원이 속한 팀', type=openapi.TYPE_STRING),
+                        }
+                    ),
+                    "message": openapi.Schema(description='로그아웃 여부', type=openapi.TYPE_STRING),
+                }
+            )
+        }
+    )
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=False):
+            user = User.objects.get(user_id=serializer.validated_data)
+            user.refresh_token = None
+            user.save()
+            res = Response(
+                {
+                    "user": {
+                        "user_id": user.user_id,
+                        "name": user.name,
+                        "part": user.part,
+                        "team": user.team
+                    },
+                    "message": "로그아웃 성공",
+                },
+                status=status.HTTP_200_OK,
+            )
+            return res
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
