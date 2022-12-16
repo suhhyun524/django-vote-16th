@@ -124,9 +124,7 @@ class DemoResultView(APIView):
                     "team": openapi.Schema(description='팀 이름', type=openapi.TYPE_STRING),
                     "total": openapi.Schema(description='투표 수', type=openapi.TYPE_NUMBER)
                 }
-
             )
-
         }
     )
     def get(self, request):
@@ -141,10 +139,6 @@ class PartResultView(APIView):
     @swagger_auto_schema(
         operation_description="파트 리더 투표 결과",
         operation_summary="파트 리더 투표 결과",
-        manual_parameters=[openapi.Parameter('Authorization',
-                                             openapi.IN_HEADER,
-                                             description="Authorization : Bearer {token}",
-                                             type=openapi.TYPE_STRING)],
         responses={
             200: openapi.Schema(
                 type=openapi.TYPE_OBJECT,
@@ -153,13 +147,10 @@ class PartResultView(APIView):
                     "name": openapi.Schema(description='이름', type=openapi.TYPE_STRING),
                     "total": openapi.Schema(description='투표 수', type=openapi.TYPE_NUMBER)
                 }
-
             )
-
         }
     )
-    def get(self, request):
-        user = User.objects.get(user_id=request.user)
-        lists = PartLeader_Vote.objects.filter(part=user.part).values('votee').annotate(total=Count('votee')).order_by('-total')
+    def get(self, request, part):
+        lists = PartLeader_Vote.objects.filter(part=part).values('votee').annotate(total=Count('votee')).order_by('-total')
         serializer = PartVoteSerializer(lists, many=True)
         return Response(serializer.data)
