@@ -235,7 +235,7 @@ class TokenVerifyAPIView(APIView):
                 return res
 
         except(TokenError):  # 토큰 만료 시
-            return Response({"message": "refresh token이 유효하지 않거나 만료되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "토큰이 유효하지 않거나 만료되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 로그아웃
