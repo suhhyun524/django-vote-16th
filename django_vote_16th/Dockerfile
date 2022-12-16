@@ -1,5 +1,7 @@
 FROM python:3.8.3-alpine
 RUN pip install --upgrade pip
+ENV PIP_ROOT_USER_ACTION=ignore
+
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /app
