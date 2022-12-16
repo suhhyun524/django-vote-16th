@@ -18,7 +18,7 @@ services:
       - 8000
     entrypoint:
       - sh
-      - config/docker/entrypoint.prod.sh
+      - django_vote_16th/config/docker/entrypoint.prod.sh
 
   nginx:
     container_name: nginx
