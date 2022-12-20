@@ -33,7 +33,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'user.User'
 
@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'user',
     'rest_framework',
     'drf_yasg',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -100,7 +101,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000','https://prefoliovote.ml:80','http://prefoliovote.ml:80','https://prefoliovote.ml','http://prefoliovote.ml']
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'django_vote_16th.urls'
 

@@ -10,7 +10,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: django_vote_16th.settings.prod
     env_file:
-      - ubuntu/.env
+      - ../.env
     volumes:
       - static:/home/app/web/static
       - media:/home/app/web/media
@@ -18,7 +18,7 @@ services:
       - 8000
     entrypoint:
       - sh
-      - django_vote_16th/config/docker/entrypoint.prod.sh
+      - config/docker/entrypoint.prod.sh
 
   nginx:
     container_name: nginx
