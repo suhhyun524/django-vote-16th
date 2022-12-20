@@ -81,7 +81,7 @@ class PartVoteView(APIView):
     )
     def get(self, request):
         user = User.objects.get(user_id=request.user)
-        lists = User.objects.filter(part=user.part)
+        lists = User.objects.filter(part=user.part, is_candidate=True)
         serializer = UserSerializer(lists, many=True)
 
         return Response(serializer.data)
