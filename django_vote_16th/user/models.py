@@ -6,7 +6,7 @@ from django.db import models
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, user_id, name, email, part, team, password, **kwargs):
+    def create_user(self, user_id, name, email, part, team, password, is_candidate, **kwargs):
         if not user_id:
             raise ValueError('아이디를 입력해주세요')
         if not name:
@@ -19,6 +19,8 @@ class UserManager(BaseUserManager):
             raise ValueError('본인 파트를 선택해주세요(프론트/백)')
         if not team:
             raise ValueError('본인 팀을 선택해주세요')
+        if not is_candidate:
+            raise ValueError('후보자 참가 여부를 선택해주세요')
 
         user = self.model(
             user_id=user_id,
@@ -26,12 +28,13 @@ class UserManager(BaseUserManager):
             email=email,
             part=part,
             team=team,
+            is_candidate=is_candidate,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, user_id=None, name=None, email=None, part=None, team=None, password=None, **extra_fields):
+    def create_superuser(self, user_id=None, name=None, email=None, part=None, team=None, password=None, is_candidate=None, **extra_fields):
         superuser = self.create_user(
             user_id=user_id,
             name=name,
@@ -39,6 +42,7 @@ class UserManager(BaseUserManager):
             part=part,
             team=team,
             password=password,
+            is_candidate=is_candidate,
         )
         superuser.is_staff = True
         superuser.is_superuser = True
@@ -53,6 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=30, unique=True, null=False, blank=False)
     part = models.CharField(max_length=30, null=False)
     team = models.CharField(max_length=30)
+    is_candidate = models.BooleanField(null=False, default=False)
     is_voted_demo = models.BooleanField(default=False)
     is_voted_partleader = models.BooleanField(default=False)
     refresh_token = models.CharField(max_length=300, null=True, blank=True)
@@ -66,7 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['email', 'name', 'part', 'team']
+    REQUIRED_FIELDS = ['email', 'name', 'part', 'team', 'is_candidate']
 
     class Meta:
         db_table = 'user'
