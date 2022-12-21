@@ -8,7 +8,7 @@ class JoinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['user_id', 'name', 'email', 'password', 'part', 'team']
+        fields = ['user_id', 'name', 'email', 'password', 'part', 'team', 'is_candidate']
 
     def create(self, validated_data):
         user_id = validated_data.get('user_id')
@@ -17,12 +17,14 @@ class JoinSerializer(serializers.ModelSerializer):
         part = validated_data.get('part')
         team = validated_data.get('team')
         password = validated_data.get('password')
+        is_candidate = validated_data.get('is_candidate')
         user = User(
             user_id=user_id,
             name=name,
             email=email,
             part=part,
-            team=team
+            team=team,
+            is_candidate=is_candidate,
         )
         user.set_password(password)
         user.save()

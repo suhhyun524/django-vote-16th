@@ -30,6 +30,7 @@ class JoinAPIView(APIView):
                             "name": openapi.Schema(description='회원 이름', type=openapi.TYPE_STRING),
                             "part": openapi.Schema(description='회원이 속한 파트', type=openapi.TYPE_STRING),
                             "team": openapi.Schema(description='회원이 속한 팀', type=openapi.TYPE_STRING),
+                            "is_candidate": openapi.Schema(description='후보자 여부', type=openapi.TYPE_BOOLEAN)
                         }
                     ),
                     "message": openapi.Schema(description='회원가입 여부', type=openapi.TYPE_STRING),
@@ -59,7 +60,8 @@ class JoinAPIView(APIView):
                         "user_id": serializer.data.get("user_id"),
                         "name": serializer.data.get("name"),
                         "part": serializer.data.get("part"),
-                        "team": serializer.data.get("team")
+                        "team": serializer.data.get("team"),
+                        "is_candidate": serializer.data.get("is_candidate"),
                     },
                     "message": "회원가입 성공",
                     "token": {
